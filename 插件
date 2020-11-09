@@ -1,0 +1,374 @@
+// index.js
+
+import ConfirmComponent from './index.vue';
+let $vm;
+const plugin = {
+  install (vue) {
+    const Confirm = vue.extend(ConfirmComponent);
+    if (!$vm) {
+      $vm = new Confirm({
+        el: document.createElement('div')
+      });
+      document.body.appendChild($vm.$el);
+    }
+    const confirm = {
+      show (options) {
+        if (typeof options === 'object') {
+          $vm.typeNum = options.typeNum || 1;
+          $vm.content = options.content;
+          $vm.cancelText = options.cancelText || '取消';
+          $vm.confirmText = options.confirmText || '确定';
+          $vm.newsTitle = options.newsTitle || '';
+          $vm.$off('on-cancel');
+          $vm.$off('on-confirm');
+          $vm.$on('on-cancel', function () {
+            $vm.showValue = false;
+            options && options.onCancel && options.onCancel();
+          });
+          $vm.$on('on-confirm', function ()  {
+            $vm.showValue = false;
+            console.log($vm.inputValue)
+            options && options.onConfirm && options.onConfirm($vm.inputValue);
+          });
+          $vm.showValue = true;
+        } else {
+          $vm.showValue = false;
+        }
+      },
+      hide () {
+        $vm.showValue = false;
+      }
+    };
+    vue.prototype.$confirm = confirm;
+  }
+};
+export default plugin;
+
+// 页面
+index.uve
+<template>
+  <div v-show="showValue">
+    <div class="confirm-mask" @click="onHidden"></div>
+    <div class="confirm-content-box">
+      <p class="confirm-text-content" v-html="content" v-if="content"></p>
+      <template v-else-if="typeNum==1">
+        <div class="tips_popup popCommon">
+          <p class="closeBtn icon-close"  @click="onCancelAction"></p>
+          <h2>{{newsTitle}}</h2>
+          <div><input type="text" v-model="inputValue"></div>
+          <div class="btn_box">
+            <div class="confirm-sure-button" @click="onConfirmAction">{{confirmText}}</div>
+          </div>
+        </div>
+      </template>
+      <template v-else-if="typeNum==2">
+        <div class="tips_popup popCommon">
+          <p class="closeBtn icon-close"  @click="onCancelAction"></p>
+          <h2>{{newsTitle}}</h2>
+          <div><input type="text" v-model="inputValue"></div>
+          <div class="btn_box">
+            <div class="confirm-sure-button" @click="onConfirmAction">{{confirmText}}</div>
+            <div class="confirm-cancel-button" @click="onCancelAction">{{cancelText}}</div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    typeNum: {
+      type: Number,
+      default: 1
+    },
+    content: {
+      type: String,
+      default: ''
+    },
+    cancelText: {
+      type: String,
+      default: '取消'
+    },
+    confirmText: {
+      type: String,
+      default: '确认'
+    },
+    newsTitle: {
+      type: String,
+      default: ''
+    },
+  },
+  data () {
+    return {
+      showValue: false,
+      inputValue: ''
+    };
+  },
+  methods: {
+    onHidden () {
+      this.$emit('on-cancel');
+    },
+    onCancelAction () {
+      this.$emit('on-cancel');
+    },
+    onConfirmAction () {
+      this.$emit('on-confirm', this.inputValue);
+    }
+  }
+};
+</script>
+
+<style scoped>
+.confirm-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+}
+
+/*.confirm-content-box {
+  position: fixed;
+  width: 5.88rem;
+  left: 50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  margin-top:-128px;
+  background-color: #fff;
+  border-radius: 8px;
+  z-index: 10001;
+}*/
+
+.confirm-text-content {
+  padding: 0.58rem 0.3rem;
+  border-bottom: 1px solid #e7e7e7; /*no*/
+  text-align: center;
+  font-size: 0.36rem;
+  color: #1e1e1e;
+}
+
+.confirm-cancel-button {
+  color: #666;
+}
+
+/* .confirm-sure-button {
+  color: #f37938;
+  border-left: 1px solid #e8e8e8; 
+} */
+
+.confirm-know-button {
+  color: #f37938;
+  text-align: center;
+  font-size: 32px;
+  height: 90px;
+  line-height: 50px;
+}
+
+/* .confirm-cancel-button,
+.confirm-sure-button {
+  box-sizing: border-box;
+  width: 50%;
+  height: 90px;
+  line-height: 90px;
+  text-align: center;
+  font-size: 32px;
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+} */
+.bor_b {
+  border-bottom: 1px solid #e8e8e8; /*no*/
+}
+/* .popCommon {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 5.88rem;
+  background: #fff;
+  border-radius: 0.08rem;
+} */
+
+/* .popCommon h2 {
+  padding: 60px 64px;
+  font-size: 30px;
+  color: #666;
+  font-family:PingFangSC-Regular;
+  line-height:42px;
+  text-align: center;
+  font-weight:normal;
+} */
+/* .popCommon .btn_box{
+  display:flex;
+  align-items: center;
+  height:90px;
+  box-sizing:border-box;
+  border-top: 1px solid #e8e8e8;
+} */
+.tips_popup .popup_content {
+  padding: 0 0.5rem;
+  padding-bottom: 0.4rem;
+  font-size: 0.24rem;
+  color: #666;
+  text-align: justify;
+  max-height: 4rem;
+  line-height: 0.38rem;
+  overflow-y: scroll;
+}
+.tips_popup .popup_content.line {
+  padding-bottom: 0.2rem;
+}
+.tips_popup a {
+  display: block;
+  border-top: 1px solid #e7e7e7; /*no*/
+  height: 0.88rem;
+  line-height: 0.88rem;
+  font-size: 0.34rem;
+  text-align: center;
+  color: #f37938;
+}
+
+
+/*
+  关闭
+ */
+.popCommon {
+  position: relative;
+}
+.confirm-content-box {
+  position: fixed;
+  left: 50%;
+  top:50%;
+  margin-top: 0;
+  transform: translate(-50%,-50%);
+  background-color: #fff;
+  z-index: 10001;
+  padding: 1.6rem;
+}
+
+.closeBtn {
+  font-size: 1.4em;
+  float: right;
+  color: #00b4cf;
+  position: absolute;
+  right: 0;
+  top: -1rem;
+}
+.popCommon h2 {
+  padding: 0.2rem;
+  font-size: 1.4rem;
+  color: #666;
+  text-align: left;
+  font-weight:normal;
+}
+.popCommon input {  
+  width: 100%;
+  border: 1px solid #979797;
+  color: #00b4cf;
+  line-height: 2.6rem;
+  padding-left: 1rem;
+}
+.popCommon .btn_box {
+  overflow: hidden;
+  align-items: left;
+  display: flex;
+  margin-top: 2.2rem
+}
+
+.btn_box .confirm-cancel-button,
+.btn_box .confirm-sure-button {
+  box-sizing: border-box;
+  padding-top: 0.3rem;
+  padding-bottom: 0.5rem;
+  text-align: center;
+  font-size: 0.5rem;
+  white-space: nowrap;
+  color: #fff;
+}
+.btn_box .confirm-cancel-button {
+  background: #2d4054;
+  margin-left: 1.5rem;
+  width: 16.2%;
+}
+.btn_box .confirm-sure-button {
+  background: #00b4cf;
+  margin-right: 0.2rem;
+  padding-left: 0.9rem;
+  padding-right: 0.6rem;
+  width: 18%;
+}
+
+@media only screen and (min-width:320px) and (max-width:768px) {
+  .confirm-content-box {
+    width: 100%;
+  }
+  .confirm-sure-button {
+    margin-right: 0;
+    width: 100%;
+  }
+}
+@media only screen and (min-width:1024px){
+  .confirm-mask {
+    z-index:-1;
+    background: none;
+  }
+  .confirm-content-box {
+    border:2px solid #00b4cf;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+    top:30%;
+    position:absolute;
+  }
+  .confirm-content-box:before{
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border: solid transparent;
+    border-width: 10px;
+    border-bottom-color: #00b4cf;
+    content: "";
+    position: absolute;
+    top: -19px;
+    left: 41px;
+    right: 0;
+  }
+  .btn_box .confirm-cancel-button {
+  margin-left: 1.5rem;
+  width: 28%;
+}
+.btn_box .confirm-sure-button {
+  background: #00b4cf;
+  margin-right: 0.2rem;
+  padding-left: 0.9rem;
+  padding-right: 0.6rem;
+  width:33%;
+}
+}
+</style>
+
+// 组见内使用
+addBtn () {
+  let self = this
+  let options = {
+    typeNum: '10',
+    onCancel: self.closeConfirmBox,
+    onConfirm: self.requestConfirmChange
+  };
+  options.newsTitle = 'Separate multiple resource name with commas';
+  options.confirmText = 'Add Resources';
+  options.cancelText = "Cancel"
+  this.$confirm.show(options);
+},
+closeConfirmBox () {
+  console.log(1111)
+},
+requestConfirmChange (val) {
+  console.log(val)
+}
+
